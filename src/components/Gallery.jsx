@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { AnimatePresence, motion, LayoutGroup } from 'motion/react'
 import { stopLenis } from '../lib/lenis.js'
 import { ChevronLeft, ChevronRight, Close } from './Icons.jsx'
@@ -101,6 +102,8 @@ export function PhotoGallery({ items, pageSize = 24 }) {
           </button>
         </div>
       )}
+      {/* Portal: o lightbox sai da seção, senão transform dos pais quebra o position: fixed. */}
+      {createPortal(
       <AnimatePresence>
         {item && (
           <motion.div className="lightbox" role="dialog" aria-modal="true" aria-label="Foto ampliada" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={(e) => e.target === e.currentTarget && close()}>
@@ -118,7 +121,9 @@ export function PhotoGallery({ items, pageSize = 24 }) {
             <button type="button" className="icon-btn lightbox-nav lightbox-nav--next" onClick={() => go(1)} aria-label="Próxima foto"><ChevronRight /></button>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body,
+      )}
     </>
   )
 }

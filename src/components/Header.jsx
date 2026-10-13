@@ -39,19 +39,28 @@ export function NavLink({ to, children, onNavigate, className, ...rest }) {
   )
 }
 
+/** Seção atual pela posição de rolagem; volta a null quando nenhuma seção cobre a linha de leitura. */
 function useActiveSection(ids) {
   const [active, setActive] = useState(null)
   useEffect(() => {
-    const els = ids.map((id) => document.getElementById(id)).filter(Boolean)
-    if (!els.length) return
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((en) => en.isIntersecting && setActive(en.target.id))
-      },
-      { rootMargin: '-45% 0px -50% 0px' },
-    )
-    els.forEach((el) => io.observe(el))
-    return () => io.disconnect()
+    const update = () => {
+      const line = window.innerHeight * 0.4
+      let current = null
+      for (const id of ids) {
+        const el = document.getElementById(id)
+        if (!el) continue
+        const r = el.getBoundingClientRect()
+        if (r.top <= line && r.bottom > line) current = id
+      }
+      setActive(current)
+    }
+    update()
+    window.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
+    return () => {
+      window.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+    }
   }, [ids.join(',')]) // eslint-disable-line react-hooks/exhaustive-deps
   return active
 }
